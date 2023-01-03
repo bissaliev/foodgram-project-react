@@ -2,7 +2,7 @@ from django.core.validators import MinValueValidator
 from drf_extra_fields.fields import Base64ImageField
 from recipes.models import (Favorite, Ingredient, IngredientRecipe, Recipe,
                             ShoppingCart, Tag)
-from rest_framework import serializers
+from rest_framework import serializers, exceptions
 from users.serializers import CustomUserSerializer
 
 
@@ -99,6 +99,15 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = '__all__'
+
+    def validate_ingredients(self, value):
+        ingredients = [item['id'] for item in value]
+        for ingredient in ingredients:
+            if ingredients.count(ingredient) > 1:
+                raise exceptions.ValidationError(
+                    'У рецепта не может быть два одинаковых ингредиента!'
+                )
+        return value
 
     def get_is_favorited(self, obj):
         request = self.context.get('request')
