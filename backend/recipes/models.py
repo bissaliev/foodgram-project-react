@@ -64,7 +64,7 @@ class Recipe(models.Model):
         ]
     )
     tags = models.ManyToManyField(
-        Tag, related_name='recipes', verbose_name='Теги', null=True
+        Tag, related_name='recipes', verbose_name='Теги'
     )
     ingredients = models.ManyToManyField(
         Ingredient, through='IngredientRecipe',
@@ -93,7 +93,7 @@ class IngredientRecipe(models.Model):
         Recipe, on_delete=models.CASCADE, null=True,
         verbose_name='Рецепт'
     )
-    amound = models.IntegerField(
+    amount = models.IntegerField(
         default=1, verbose_name='Количество ингредиентов',
         validators=[MinValueValidator(
             1, 'Количество ингредиентов должно быть не менее 1!'
@@ -110,4 +110,49 @@ class IngredientRecipe(models.Model):
         ]
 
     def __str__(self):
-        return f'{self.recipe}: {self.ingredient} - {self.amound}'
+        return f'{self.recipe}: {self.amount} {self.ingredient}'
+
+
+class Favorite(models.Model):
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, verbose_name='Пользователь'
+    )
+    recipe = models.ForeignKey(
+        Recipe, on_delete=models.CASCADE, related_name='in_favorite',
+        verbose_name='Рецепт'
+    )
+
+    class Meta:
+        verbose_name = 'Избранный рецепт'
+        verbose_name_plural = 'Избранные рецепты'
+        ordering = ['user']
+        constraints = (
+            models.UniqueConstraint(
+                fields=('user', 'recipe'),
+                name='unique_user_recipe'
+            ),
+        )
+
+    def __str__(self):
+        return f'{self.user} - {self.recipe}'
+
+
+class ShoppingCart(models.Model):
+    """ Модель списка покупок. """
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='shopping',
+        verbose_name='Пользователь'
+    )
+    recipe = models.ForeignKey(
+        Recipe, on_delete=models.CASCADE, related_name='shopping',
+        verbose_name='Рецепт'
+    )
+
+    class Meta:
+        verbose_name = 'Список покупок'
+        ordering = ['-id']
+        constraints = (models.UniqueConstraint(
+            fields=('user', 'recipe',),
+            name='unique_recipe_shopping'
+        ),
+        )
