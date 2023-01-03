@@ -1,4 +1,3 @@
-from api.paginators import CustomPaginator
 from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
 from rest_framework import status
@@ -8,6 +7,7 @@ from rest_framework.response import Response
 
 from .models import Subscribe, User
 from .serializers import CustomUserSerializer, SubscribeSerializer
+from api.paginators import CustomPaginator
 
 
 class CustomUserViewSet(UserViewSet):
