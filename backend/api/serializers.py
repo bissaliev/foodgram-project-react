@@ -51,13 +51,16 @@ class IngredientRecipeCreateSerializer(serializers.ModelSerializer):
 
 class RecipeReadSerializer(serializers.ModelSerializer):
     """ Сериализатор просмотра рецептов. """
+    image = Base64ImageField()
     author = CustomUserSerializer(read_only=True)
-    tags = TagSerializer(many=True)
-    ingredients = serializers.SerializerMethodField()
+    tags = TagSerializer(many=True, read_only=True)
+    ingredients = serializers.SerializerMethodField(read_only=True)
     is_favorited = serializers.SerializerMethodField(
+        read_only=True,
         method_name='get_is_favorited'
     )
     is_in_shopping_cart = serializers.SerializerMethodField(
+        read_only=True,
         method_name='get_is_in_shopping_cart'
     )
 
