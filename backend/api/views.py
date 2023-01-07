@@ -44,9 +44,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
             Favorite.objects.get_or_create(user=user, recipe=recipe)
             serializer = FavoriteSerializer(recipe)
             return Response(
-                    serializer.data,
-                    status=status.HTTP_201_CREATED
-                )
+                serializer.data, status=status.HTTP_201_CREATED
+            )
         Favorite.objects.filter(user=user, recipe=recipe).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
