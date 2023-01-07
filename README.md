@@ -13,10 +13,14 @@
 
 ## **Установка проекта локально:**
 - Склонировать репозиторий на локальную машину:
+
   `git clone https://github.com/bissaliev/foodgram-project-react.git`
+  
   `cd foodgram-project-react`
+
 - Cоздать и активировать виртуальное окружение:
-  `python -m venv venv
+  `python -m venv venv`
+  
   `source venv/Scripts/activate`
   
 - Cоздайте файл .env в директории /infra/ с содержанием:
