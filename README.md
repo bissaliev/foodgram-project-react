@@ -1,7 +1,6 @@
 # Проект Продуктовый помощник
 
-
-https://github.com/bissaliev/foodgram-project-react/actions/workflows/<WORKFLOW_FILE>/badge.svg
+https://github.com/bissaliev/foodgram-project-react/actions/workflows/main.yaml/badge.svg
 
 
 ## **Описание**
