@@ -59,7 +59,7 @@
 - Создать суперюзера (Администратора):
 
   `docker-compose exec backend python manage.py createsuperuser`
-- Проекта можно проверить по [здесь](http://localhost/)
+- Проект можно проверить по адресу: [http://localhost/](http://localhost/)
 - Заполнение базы данных ингредиентами
 
   `docker-compose exec backend python manage.py load_ingridients`
