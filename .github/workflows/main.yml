@@ -59,7 +59,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
           script: |
-            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/backend
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/backend:v1
             sudo docker-compose stop
             sudo docker-compose rm web
             touch .env
