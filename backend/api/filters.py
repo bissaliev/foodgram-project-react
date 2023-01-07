@@ -1,10 +1,11 @@
 from django_filters import rest_framework as filter
 
 from recipes.models import Recipe, Tag
+from users.models import User
 
 
 class RecipeFilter(filter.FilterSet):
-    author = filter.CharFilter()
+    author = filter.ModelChoiceFilter(queryset=User.objects.all())
     tags = filter.ModelMultipleChoiceFilter(
         field_name='tags__slug',
         queryset=Tag.objects.all(),
