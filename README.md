@@ -19,36 +19,49 @@
   `cd foodgram-project-react`
 
 - Cоздать и активировать виртуальное окружение:
+
   `python -m venv venv`
   
   `source venv/Scripts/activate`
   
 - Cоздайте файл .env в директории /infra/ с содержанием:
-  `SECRET_KEY=секретный ключ django
-  DB_ENGINE=django.db.backends.postgresql
-  DB_NAME=postgres
-  POSTGRES_USER=postgres
-  POSTGRES_PASSWORD=postgres
-  DB_HOST=db
-  DB_PORT=5432`
+
+  `SECRET_KEY=секретный ключ django`
+  `DB_ENGINE=django.db.backends.postgresql`
+  `DB_NAME=postgres`
+  `POSTGRES_USER=postgres`
+  `POSTGRES_PASSWORD=postgres`
+  `DB_HOST=db`
+  `DB_PORT=5432`
 
 - Перейти в директирию, обновить pip и установить зависимости из файла requirements.txt:
-  cd backend/
-  python -m pip install --upgrade pip &&
-  pip install -r backend/requirements.txt
+
+  `cd backend/`
+  
+  `python -m pip install --upgrade pip &&`
+  `pip install -r backend/requirements.txt`
 - Выполните миграции:
+
   `python manage.py migrate`
+
 - Запустите сервер:
+
   `python manage.py runserver`
+
 ## **Запуск проекта в Docker контейнере:**
 - Из папки "./infra/" выполнить команду:
+
   `docker-compose up -d`
+
 - После успешного запуска контейнеров выполнить миграции:
+
   `docker-compose exec backend python manage.py migrate`
 - Создать суперюзера (Администратора):
+
   `docker-compose exec backend python manage.py createsuperuser`
 - Проекта можно проверить по адресу: (http://localhost/)
 - Заполнение базы данных ингредиентами
+
   `docker-compose exec backend python manage.py load_ingridients`
 ## **Разработчик проекта:**
 ***Биссалиев Олег Кайдырович***
