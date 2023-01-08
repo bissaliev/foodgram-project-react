@@ -55,7 +55,7 @@ class RecipeReadSerializer(serializers.ModelSerializer):
     image = Base64ImageField()
     author = CustomUserSerializer(read_only=True)
     tags = TagSerializer(many=True, read_only=True)
-    ingredients = serializers.SerializerMethodField(read_only=True)
+    ingredients = IngredientRecipeSerializer(many=True, source='recipe')
     is_favorited = serializers.SerializerMethodField(
         read_only=True,
         method_name='get_is_favorited'
@@ -68,10 +68,6 @@ class RecipeReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         exclude = ('pub_date',)
-
-    def get_ingredients(self, obj):
-        ingredients = IngredientRecipe.objects.filter(recipe=obj)
-        return IngredientRecipeSerializer(ingredients, many=True).data
 
     def get_is_favorited(self, obj):
         request = self.context.get('request')
@@ -122,11 +118,13 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         ).exists()
 
     def create_ingredients(self, ingredients, recipe):
-        for ingredient in ingredients:
-            IngredientRecipe.objects.create(
+        IngredientRecipe.objects.bulk_create(
+            IngredientRecipe(
+                recipe=recipe,
                 ingredient=Ingredient.objects.get(id=ingredient.get('id')),
-                recipe=recipe, amount=ingredient.get('amount')
-            )
+                amount=ingredient.get('amount')
+            ) for ingredient in ingredients
+        )
 
     def create(self, validated_data):
         tags = validated_data.pop('tags')
@@ -152,26 +150,11 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         ).data
 
 
-class FavoriteSerializer(serializers.ModelSerializer):
-    """ Сериализатор для избранных рецептов. """
-    id = serializers.CharField(read_only=True)
-    name = serializers.CharField(read_only=True)
-    image = serializers.CharField(read_only=True)
-    cooking_time = serializers.CharField(read_only=True)
+class FavoriteShoppingSerializer(serializers.ModelSerializer):
+    """ Сериализатор для избранных рецептов и списка покупок. """
+    image = Base64ImageField(read_only=True)
 
     class Meta:
-        model = Favorite
+        model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
         read_only_fields = ('recipe', 'user')
-
-
-class ShoppingCartSerializer(serializers.ModelSerializer):
-    """ Сериализатор списка покупок. """
-    id = serializers.CharField(read_only=True)
-    name = serializers.CharField(read_only=True)
-    image = serializers.CharField(read_only=True)
-    cooking_time = serializers.CharField(read_only=True)
-
-    class Meta:
-        model = ShoppingCart
-        fields = ('id', 'name', 'image', 'cooking_time')

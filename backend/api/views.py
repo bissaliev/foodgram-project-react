@@ -8,14 +8,14 @@ from rest_framework.filters import SearchFilter
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
+from recipes.models import (Favorite, Ingredient, IngredientRecipe, Recipe,
+                            ShoppingCart, Tag)
 from .filters import RecipeFilter
 from .paginators import CustomPaginator
 from .permissions import IsAuthorOrReadOnly
-from .serializers import (FavoriteSerializer, IngredientSerializer,
+from .serializers import (FavoriteShoppingSerializer, IngredientSerializer,
                           RecipeCreateSerializer, RecipeReadSerializer,
-                          ShoppingCartSerializer, TagSerializer)
-from recipes.models import (Favorite, Ingredient, IngredientRecipe, Recipe,
-                            ShoppingCart, Tag)
+                          TagSerializer)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -32,36 +32,32 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeReadSerializer
         return RecipeCreateSerializer
 
+    def __func_post_delete(self, model, request, pk):
+        recipe = get_object_or_404(Recipe, pk=pk)
+        user = request.user
+        if request.method == 'POST':
+            model.objects.get_or_create(user=user, recipe=recipe)
+            serializer = FavoriteShoppingSerializer(recipe)
+            return Response(
+                serializer.data, status=status.HTTP_201_CREATED
+            )
+        model.objects.filter(user=user, recipe=recipe).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
     @action(
         detail=True, methods=['POST', 'DELETE'], url_path='favorite',
         permission_classes=(IsAuthenticated,)
     )
     def favorite(self, request, pk=None):
         """ Добавление или удаление рецепта из избранного. """
-        recipe = get_object_or_404(Recipe, pk=pk)
-        user = request.user
-        if request.method == 'POST':
-            Favorite.objects.get_or_create(user=user, recipe=recipe)
-            serializer = FavoriteSerializer(recipe)
-            return Response(
-                serializer.data, status=status.HTTP_201_CREATED
-            )
-        Favorite.objects.filter(user=user, recipe=recipe).delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return self.__func_post_delete(Favorite, request, pk)
 
     @action(
         detail=True, methods=['POST', 'DELETE'],
         permission_classes=(IsAuthenticated,)
     )
     def shopping_cart(self, request, pk=None):
-        recipe = get_object_or_404(Recipe, pk=pk)
-        user = request.user
-        if request.method == 'POST':
-            ShoppingCart.objects.get_or_create(user=user, recipe=recipe)
-            serializer = ShoppingCartSerializer(recipe)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        ShoppingCart.objects.filter(user=user, recipe=recipe).delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return self.__func_post_delete(ShoppingCart, request, pk)
 
     @action(
         detail=False, methods=['GET'], permission_classes=(IsAuthenticated,)
@@ -72,11 +68,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
             recipe__shopping__user=request.user
         ).values(
             'ingredient__name', 'ingredient__measurement_unit'
-        ).annotate(amount=Sum('amount'))
+        ).annotate(sum_amount=Sum('amount'))
         for num, i in enumerate(ingredients):
             ingredient_list += (
                 f'\n{i["ingredient__name"]} - '
-                f'{i["amount"]} {i["ingredient__measurement_unit"]}'
+                f'{i["sum_amount"]} {i["ingredient__measurement_unit"]}'
             )
             if num < ingredients.count() - 1:
                 ingredient_list += ', '

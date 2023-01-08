@@ -87,11 +87,13 @@ class IngredientRecipe(models.Model):
     """ Модель Ингредиент - Рецепт. """
     ingredient = models.ForeignKey(
         Ingredient, on_delete=models.CASCADE, null=True,
-        verbose_name='Ингредиенты'
+        verbose_name='Ингредиенты',
+        related_name='ingredient'
     )
     recipe = models.ForeignKey(
         Recipe, on_delete=models.CASCADE, null=True,
-        verbose_name='Рецепт'
+        verbose_name='Рецепт',
+        related_name='recipe'
     )
     amount = models.IntegerField(
         default=1, verbose_name='Количество ингредиентов',

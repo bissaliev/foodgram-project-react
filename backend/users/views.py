@@ -22,9 +22,9 @@ class CustomUserViewSet(UserViewSet):
     )
     def subscribe(self, request, id=None):
         """ Создание и удаление подписки на автора. """
-        subscriber = get_object_or_404(User, username=request.user)
         author = get_object_or_404(User, id=id)
-        if subscriber == author:
+        subscriber = request.user
+        if request.user == author:
             return Response(
                 {'errors': 'Вы не можете подписаться на самого себя!'},
                 status=status.HTTP_400_BAD_REQUEST
@@ -54,8 +54,6 @@ class CustomUserViewSet(UserViewSet):
     def subscriptions(self, request):
         """ Список подписок на авторов. """
         subscriber = request.user
-        if subscriber.is_anonymous:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
         subscribe = Subscribe.objects.filter(subscriber=subscriber)
         page = self.paginate_queryset(subscribe)
         serializer = SubscribeSerializer(
