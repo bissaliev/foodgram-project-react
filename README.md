@@ -69,5 +69,3 @@
   `docker-compose exec backend python manage.py load_ingridients`
 ## **Разработчик проекта:**
 ***Биссалиев Олег Кайдырович***
-YP
-
