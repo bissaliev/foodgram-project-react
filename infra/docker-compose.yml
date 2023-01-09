@@ -26,7 +26,7 @@ services:
       - backend
       - frontend
   backend:
-    image: bissaliev/backend:v1
+    image: bissaliev/backend:latest
     restart: always
     volumes:
       - static_value:/app/backend_static/
