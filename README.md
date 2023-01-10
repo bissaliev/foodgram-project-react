@@ -52,8 +52,10 @@ password: `admin`
 
   `cd backend/`
   
-  `python -m pip install --upgrade pip &&`
-  `pip install -r backend/requirements.txt`
+  ```
+  python -m pip install --upgrade pip &&
+  pip install -r backend/requirements.txt
+
 - Выполните миграции:
 
   `python manage.py migrate`
