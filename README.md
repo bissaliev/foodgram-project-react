@@ -39,7 +39,8 @@ password: `admin`
   
 - Cоздайте файл .env в директории /infra/ с содержанием:
 
-  ```SECRET_KEY=секретный ключ django
+  ```
+  SECRET_KEY=секретный ключ django
   DB_ENGINE=django.db.backends.postgresql
   DB_NAME=postgres
   POSTGRES_USER=postgres
@@ -80,7 +81,8 @@ password: `admin`
   
 - Заполние базы данных фикстурами
 
-  ```python3 manage.py shell  
+  ```
+  docker-compose exec backend python manage.py shell  
   >>> from django.contrib.contenttypes.models import ContentType
   >>> ContentType.objects.all().delete()
   >>> quit()
