@@ -47,7 +47,7 @@ jobs:
             push: true
             context: ./backend
             file: ./backend/Dockerfile
-            tags: ${{ secrets.DOCKER_USERNAME }}/backend:v2.0
+            tags: ${{ secrets.DOCKER_USERNAME }}/backend:latest
   deploy:
     runs-on: ubuntu-latest
     needs: build_and_push_to_docker_hub
@@ -60,7 +60,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
           script: |
-            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/backend:v2.0
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/backend:latest
             sudo docker-compose stop
             sudo docker-compose rm backend
             touch .env
