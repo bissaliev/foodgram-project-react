@@ -3,9 +3,12 @@
 ![Foodgram workflow](https://github.com/bissaliev/foodgram-project-react/actions/workflows/main.yml/badge.svg)
 
 **Проект развернут на [сервере](http://158.160.41.34/recipes)**
+
 Войти можно с учетной записью админ-пользователя:
-email: bissaliev@yandex.com
-password: admin
+
+email: `bissaliev@yandex.com`
+
+password: `admin`
 
 
 
