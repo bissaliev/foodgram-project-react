@@ -30,13 +30,13 @@
   
 - Cоздайте файл .env в директории /infra/ с содержанием:
 
-  `SECRET_KEY=секретный ключ django`
-  `DB_ENGINE=django.db.backends.postgresql`
-  `DB_NAME=postgres`
-  `POSTGRES_USER=postgres`
-  `POSTGRES_PASSWORD=postgres`
-  `DB_HOST=db`
-  `DB_PORT=5432`
+  ```SECRET_KEY=секретный ключ django
+  DB_ENGINE=django.db.backends.postgresql
+  DB_NAME=postgres
+  POSTGRES_USER=postgres
+  POSTGRES_PASSWORD=postgres
+  DB_HOST=db
+  DB_PORT=5432```
 
 - Перейти в директирию, обновить pip и установить зависимости из файла requirements.txt:
 
