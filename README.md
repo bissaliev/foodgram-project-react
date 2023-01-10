@@ -2,6 +2,15 @@
 
 ![Foodgram workflow](https://github.com/bissaliev/foodgram-project-react/actions/workflows/main.yml/badge.svg)
 
+**Проект развернут на [сервере](http://158.160.41.34/recipes)**
+
+Войти можно с учетной записью админ-пользователя:
+
+email: `bissaliev@yandex.com`
+
+password: `admin`
+
+
 
 ## **Описание**
 Проект Foodgram, «Продуктовый помощник». На этом сервисе пользователи смогут публиковать рецепты, подписываться на публикации других пользователей, добавлять понравившиеся рецепты в список «Избранное», а перед походом в магазин скачивать сводный список продуктов, необходимых для приготовления одного или нескольких выбранных блюд.
@@ -30,13 +39,14 @@
   
 - Cоздайте файл .env в директории /infra/ с содержанием:
 
-  `SECRET_KEY=секретный ключ django`
-  `DB_ENGINE=django.db.backends.postgresql`
-  `DB_NAME=postgres`
-  `POSTGRES_USER=postgres`
-  `POSTGRES_PASSWORD=postgres`
-  `DB_HOST=db`
-  `DB_PORT=5432`
+  ```
+  SECRET_KEY=секретный ключ django
+  DB_ENGINE=django.db.backends.postgresql
+  DB_NAME=postgres
+  POSTGRES_USER=postgres
+  POSTGRES_PASSWORD=postgres
+  DB_HOST=db
+  DB_PORT=5432
 
 - Перейти в директирию, обновить pip и установить зависимости из файла requirements.txt:
 
@@ -64,8 +74,20 @@
 
   `docker-compose exec backend python manage.py createsuperuser`
 - Проект можно проверить по адресу: [http://localhost/](http://localhost/)
+
 - Заполнение базы данных ингредиентами
 
   `docker-compose exec backend python manage.py load_ingridients`
+  
+- Заполние базы данных фикстурами
+
+  ```
+  docker-compose exec backend python manage.py shell  
+  >>> from django.contrib.contenttypes.models import ContentType
+  >>> ContentType.objects.all().delete()
+  >>> quit()
+  docker-compose exec backend python manage loaddata data/dump.json
+
 ## **Разработчик проекта:**
+
 ***Биссалиев Олег Кайдырович***
