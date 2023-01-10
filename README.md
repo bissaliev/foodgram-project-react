@@ -73,8 +73,19 @@ password: `admin`
 
   `docker-compose exec backend python manage.py createsuperuser`
 - Проект можно проверить по адресу: [http://localhost/](http://localhost/)
+
 - Заполнение базы данных ингредиентами
 
   `docker-compose exec backend python manage.py load_ingridients`
+  
+- Заполние базы данных фикстурами
+
+  ```python3 manage.py shell  
+  >>> from django.contrib.contenttypes.models import ContentType
+  >>> ContentType.objects.all().delete()
+  >>> quit()
+  docker-compose exec backend python manage loaddata data/dump.json
+
 ## **Разработчик проекта:**
+
 ***Биссалиев Олег Кайдырович***
