@@ -65,6 +65,7 @@ password: `admin`
   `python manage.py runserver`
 
 ## **Запуск проекта в Docker контейнере:**
+
 - Из папки "./infra/" выполнить команду:
 
   `docker-compose up -d`
