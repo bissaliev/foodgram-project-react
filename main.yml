@@ -73,7 +73,6 @@ jobs:
             echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> .env
             sudo docker-compose up -d --build
             sudo docker-compose exec -T backend python manage.py migrate
-            sudo docker-compose exec -T backend python manage.py load_ingridients
             sudo docker-compose exec -T backend python manage.py collectstatic --no-input
   send_message:
     runs-on: ubuntu-latest
