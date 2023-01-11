@@ -6,11 +6,9 @@
 
 Войти можно с учетной записью администратора:
 
-email:
- ```bissaliev@yandex.com
+email: `bissaliev@yandex.com`
 
-password:
- ```admin
+password:  `admin`
 
 ## **Описание**
 
