@@ -72,6 +72,7 @@ password:  `admin`
 - После успешного запуска контейнеров выполнить миграции:
 
   `docker-compose exec backend python manage.py migrate`
+
 - Создать суперюзера (Администратора):
 
   `docker-compose exec backend python manage.py createsuperuser`
