@@ -6,6 +6,7 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .filters import RecipeFilter, SearchIngredientsFilter
 from .paginators import CustomPaginator
@@ -40,9 +41,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.request.method == "GET":
             return RecipeReadSerializer
-        return RecipeCreateSerializer
+        return self.serializer_class
 
-    def __func_post_delete(self, model, request, pk):
+    @staticmethod
+    def __func_post_delete(model, request, pk):
         recipe = get_object_or_404(Recipe, pk=pk)
         user = request.user
         if request.method == "POST":
@@ -51,16 +53,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         model.objects.filter(user=user, recipe=recipe).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-    @action(
-        detail=True,
-        methods=["POST", "DELETE"],
-        url_path="favorite",
-        permission_classes=(IsAuthenticated,),
-    )
-    def favorite(self, request, pk=None):
-        """Добавление или удаление рецепта из избранного."""
-        return self.__func_post_delete(Favorite, request, pk)
 
     @action(
         detail=True,
@@ -113,3 +105,18 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = (AllowAny,)
     filter_backends = (SearchIngredientsFilter,)
     search_fields = ("^name",)
+
+
+class FavoriteAPIView(APIView):
+    queryset = Favorite.objects.all()
+    serializer_class = FavoriteShoppingSerializer
+
+    def post(self, request, recipe_id: int):
+        recipe = Recipe.objects.get(id=recipe_id)
+        Favorite.objects.create(user=request.user, recipe=recipe)
+        return Response(self.serializer_class(recipe).data)
+
+    def delete(self, request, recipe_id: int):
+        recipe = Recipe.objects.get(id=recipe_id)
+        Favorite.objects.filter(recipe=recipe, user=request.user).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
