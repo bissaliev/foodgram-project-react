@@ -2,96 +2,95 @@
 
 ![Foodgram workflow](https://github.com/bissaliev/foodgram-project-react/actions/workflows/main.yml/badge.svg)
 
-**Проект развернут на [сервере](http://158.160.41.34/recipes)**
-
-Войти можно с учетной записью администратора:
-
-email: `bissaliev@yandex.com`
-
-password:  `admin`
-
 ## **Описание**
 
 Проект Foodgram, «Продуктовый помощник». На этом сервисе пользователи смогут публиковать рецепты, подписываться на публикации других пользователей, добавлять понравившиеся рецепты в список «Избранное», а перед походом в магазин скачивать сводный список продуктов, необходимых для приготовления одного или нескольких выбранных блюд.
 
 ## **Техническая информация:**
+
 Стек технологий: Python 3, Django, Django Rest Framework, React, Docker, PostgreSQL, nginx, gunicorn, Djoser.
 
-- Веб-сервер: nginx (контейнер nginx)
-- Frontend фреймворк: React (контейнер frontend)
-- Backend фреймворк: Django (контейнер backend)
-- API фреймворк: Django REST (контейнер backend)
-- База данных: PostgreSQL (контейнер db)
+-   Веб-сервер: nginx (контейнер nginx)
+-   Frontend фреймворк: React (контейнер frontend)
+-   Backend фреймворк: Django (контейнер backend)
+-   API фреймворк: Django REST (контейнер backend)
+-   База данных: PostgreSQL (контейнер db)
 
 ## **Установка проекта локально:**
-- Склонировать репозиторий на локальную машину:
 
-  `git clone https://github.com/bissaliev/foodgram-project-react.git`
-  
-  `cd foodgram-project-react`
+-   Склонировать репозиторий на локальную машину:
 
-- Cоздать и активировать виртуальное окружение:
+    `git clone https://github.com/bissaliev/foodgram-project-react.git`
 
-  `python -m venv venv`
-  
-  `source venv/Scripts/activate`
-  
-- Cоздайте файл .env в директории /infra/ с содержанием:
+    `cd foodgram-project-react`
 
-  ```
-  SECRET_KEY=секретный ключ django
-  DB_ENGINE=django.db.backends.postgresql
-  DB_NAME=postgres
-  POSTGRES_USER=postgres
-  POSTGRES_PASSWORD=postgres
-  DB_HOST=db
-  DB_PORT=5432
+-   Cоздать и активировать виртуальное окружение:
 
-- Перейти в директирию, обновить pip и установить зависимости из файла requirements.txt:
+    `python -m venv venv`
 
-  `cd backend/`
-  
-  ```
-  python -m pip install --upgrade pip &&
-  pip install -r backend/requirements.txt
+    `source venv/Scripts/activate`
 
-- Выполните миграции:
+-   Cоздайте файл .env в директории /infra/ с содержанием:
 
-  `python manage.py migrate`
+    ```
+    SECRET_KEY=секретный ключ django
+    DB_ENGINE=django.db.backends.postgresql
+    DB_NAME=postgres
+    POSTGRES_USER=postgres
+    POSTGRES_PASSWORD=postgres
+    DB_HOST=db
+    DB_PORT=5432
 
-- Запустите сервер:
+    ```
 
-  `python manage.py runserver`
+-   Перейти в директирию, обновить pip и установить зависимости из файла requirements.txt:
+
+    `cd backend/`
+
+    ```
+    python -m pip install --upgrade pip &&
+    pip install -r backend/requirements.txt
+
+    ```
+
+-   Выполните миграции:
+
+    `python manage.py migrate`
+
+-   Запустите сервер:
+
+    `python manage.py runserver`
 
 ## **Запуск проекта в Docker контейнере:**
 
-- Из папки "./infra/" выполнить команду:
+-   Из папки "./infra/" выполнить команду:
 
-  `docker-compose up -d`
+    `docker-compose up -d`
 
-- После успешного запуска контейнеров выполнить миграции:
+-   После успешного запуска контейнеров выполнить миграции:
 
-  `docker-compose exec backend python manage.py migrate`
+    `docker-compose exec backend python manage.py migrate`
 
-- Создать суперюзера (Администратора):
+-   Создать суперюзера (Администратора):
 
-  `docker-compose exec backend python manage.py createsuperuser`
+    `docker-compose exec backend python manage.py createsuperuser`
 
-- Проект можно проверить по адресу: [http://localhost/](http://localhost/)
+-   Проект можно проверить по адресу: [http://localhost/](http://localhost/)
 
-- Заполнение базы данных ингредиентами
+-   Заполнение базы данных ингредиентами
 
-  `docker-compose exec backend python manage.py load_ingridients`
-  
-- Заполние базы данных фикстурами
+    `docker-compose exec backend python manage.py load_ingridients`
 
-  ```
-  docker-compose exec backend python manage.py shell  
-  >>> from django.contrib.contenttypes.models import ContentType
-  >>> ContentType.objects.all().delete()
-  >>> quit()
-  docker-compose exec backend python manage loaddata data/dump.json
+-   Заполние базы данных фикстурами
+
+    ```
+    docker-compose exec backend python manage.py shell
+    >>> from django.contrib.contenttypes.models import ContentType
+    >>> ContentType.objects.all().delete()
+    >>> quit()
+    docker-compose exec backend python manage loaddata data/dump.json
+    ```
 
 ## **Разработчик проекта:**
 
-***Биссалиев Олег Кайдырович***
+**_Биссалиев Олег Кайдырович_**
