@@ -11,9 +11,9 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .filters import RecipeFilter, SearchIngredientsFilter
-from .paginators import CustomPaginator
-from .serializers import (
+from ..filters import RecipeFilter, SearchIngredientsFilter
+from ..paginators import CustomPaginator
+from ..serializers.recipe_serializers import (
     FavoriteSerializer,
     IngredientSerializer,
     RecipeCreateSerializer,
