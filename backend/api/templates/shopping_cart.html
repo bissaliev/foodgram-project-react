@@ -1,0 +1,27 @@
+<!--Шаблон для скачивания списка покупок-->
+<html>
+
+<body>
+    <h1>Список покупок</h1>
+</body>
+<table>
+    <thead>
+        <th>#</th>
+        <th>Название ингредиента</th>
+        <th>Количество</th>
+        <th>Единица измерения</th>
+    </thead>
+    <tbody>
+        {% for ingredient in ingredients %}
+        <tr class="row{% cycle '1' '2' %}">
+            <td class="num">{{ forloop.counter }}</td>
+            <td class="num">{{ ingredient.ingredient__name }}</td>
+            <td class="num">{{ ingredient.sum_amount }}</td>
+            <td class="num">{{ ingredient.ingredient__measurement_unit }}</td>
+        </tr>
+        {% endfor %}
+
+    </tbody>
+</table>
+
+</html>

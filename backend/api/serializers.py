@@ -182,3 +182,37 @@ class FavoriteShoppingSerializer(serializers.ModelSerializer):
         model = Recipe
         fields = ("id", "name", "image", "cooking_time")
         read_only_fields = ("recipe", "user")
+
+
+class FavoriteSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(source="recipe.id", read_only=True)
+    name = serializers.ReadOnlyField(source="recipe.name")
+    cooking_time = serializers.IntegerField(
+        source="recipe.cooking_time", read_only=True
+    )
+    image = Base64ImageField(read_only=True, source="recipe.image")
+
+    class Meta:
+        model = Favorite
+        fields = ("id", "name", "image", "cooking_time", "recipe", "user")
+        validators = [
+            serializers.UniqueTogetherValidator(
+                queryset=Favorite.objects.all(),
+                fields=["recipe", "user"],
+                message="Рецепт уже находится в избранных",
+            )
+        ]
+        extra_kwargs = {
+            "recipe": {"write_only": True},
+            "user": {"write_only": True},
+        }
+
+
+class ShoppingSerializer(FavoriteSerializer):
+    class Meta:
+        model = ShoppingCart
+        fields = ("id", "name", "image", "cooking_time", "recipe", "user")
+        extra_kwargs = {
+            "recipe": {"write_only": True},
+            "user": {"write_only": True},
+        }

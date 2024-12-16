@@ -1,6 +1,9 @@
+import weasyprint
+from django.conf import settings
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+from django.template.loader import render_to_string
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -10,14 +13,15 @@ from rest_framework.views import APIView
 
 from .filters import RecipeFilter, SearchIngredientsFilter
 from .paginators import CustomPaginator
-from .permissions import IsAuthorOrReadOnly
 from .serializers import (
-    FavoriteShoppingSerializer,
+    FavoriteSerializer,
     IngredientSerializer,
     RecipeCreateSerializer,
     RecipeReadSerializer,
+    ShoppingSerializer,
     TagSerializer,
 )
+from api.permissions import IsAuthorOrReadOnly
 from recipes.models import (
     Favorite,
     Ingredient,
@@ -43,50 +47,49 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeReadSerializer
         return self.serializer_class
 
-    @staticmethod
-    def __func_post_delete(model, request, pk):
-        recipe = get_object_or_404(Recipe, pk=pk)
+    @action(
+        methods=["post", "delete"],
+        detail=True,
+        permission_classes=(IsAuthenticated,),
+    )
+    def favorite(self, request, pk=None):
+        """Избранные рецепты."""
+        recipe = self.get_object()
         user = request.user
         if request.method == "POST":
-            model.objects.get_or_create(user=user, recipe=recipe)
-            serializer = FavoriteShoppingSerializer(recipe)
+            serializer = FavoriteSerializer(
+                data={"recipe": recipe.id, "user": user.id}
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        model.objects.filter(user=user, recipe=recipe).delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        get_object_or_404(Favorite, recipe=recipe, user=user).delete()
+        return Response(
+            {"message": "Рецепт удален из избранных"},
+            status=status.HTTP_204_NO_CONTENT,
+        )
 
     @action(
+        methods=["post", "delete"],
         detail=True,
-        methods=["POST", "DELETE"],
         permission_classes=(IsAuthenticated,),
     )
     def shopping_cart(self, request, pk=None):
-        return self.__func_post_delete(ShoppingCart, request, pk)
-
-    @action(
-        detail=False, methods=["GET"], permission_classes=(IsAuthenticated,)
-    )
-    def download_shopping_cart(self, request):
-        ingredient_list = "Cписок покупок:"
-        ingredients = (
-            IngredientRecipe.objects.filter(
-                recipe__shopping__user=request.user
+        """Список покупок."""
+        recipe = self.get_object()
+        user = request.user
+        if request.method == "POST":
+            serializer = ShoppingSerializer(
+                data={"recipe": recipe.id, "user": user.id}
             )
-            .values("ingredient__name", "ingredient__measurement_unit")
-            .annotate(sum_amount=Sum("amount"))
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        get_object_or_404(ShoppingCart, recipe=recipe, user=user).delete()
+        return Response(
+            {"message": "Рецепт удален из списка покупок"},
+            status=status.HTTP_204_NO_CONTENT,
         )
-        for num, i in enumerate(ingredients):
-            ingredient_list += (
-                f'\n{i["ingredient__name"]} - '
-                f'{i["sum_amount"]} {i["ingredient__measurement_unit"]}'
-            )
-            if num < ingredients.count() - 1:
-                ingredient_list += ", "
-        file = "shopping_list"
-        response = HttpResponse(
-            ingredient_list, "Content-Type: application/pdf"
-        )
-        response["Content-Disposition"] = f'attachment; filename="{file}.pdf"'
-        return response
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
@@ -107,16 +110,26 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     search_fields = ("^name",)
 
 
-class FavoriteAPIView(APIView):
-    queryset = Favorite.objects.all()
-    serializer_class = FavoriteShoppingSerializer
+class ShoppingCartDownloadAPIView(APIView):
+    """Скачать список покупок."""
 
-    def post(self, request, recipe_id: int):
-        recipe = Recipe.objects.get(id=recipe_id)
-        Favorite.objects.create(user=request.user, recipe=recipe)
-        return Response(self.serializer_class(recipe).data)
-
-    def delete(self, request, recipe_id: int):
-        recipe = Recipe.objects.get(id=recipe_id)
-        Favorite.objects.filter(recipe=recipe, user=request.user).delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    def get(self, request):
+        ingredients = (
+            IngredientRecipe.objects.filter(
+                recipe__shopping__user=request.user
+            )
+            .values("ingredient__name", "ingredient__measurement_unit")
+            .annotate(sum_amount=Sum("amount"))
+        )
+        html = render_to_string(
+            "shopping_cart.html", {"ingredients": ingredients}
+        )
+        response = HttpResponse(content_type="application/pdf")
+        response["Content-Disposition"] = "attachment; filename=shortlist.pdf"
+        weasyprint.HTML(string=html).write_pdf(
+            response,
+            stylesheets=[
+                weasyprint.CSS(f"{settings.STATICFILES_DIRS[0]}/css/pdf.css")
+            ],
+        )
+        return response
