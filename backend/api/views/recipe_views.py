@@ -113,6 +113,8 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 class ShoppingCartDownloadAPIView(APIView):
     """Скачать список покупок."""
 
+    permission_classes = (IsAuthenticated,)
+
     def get(self, request):
         ingredients = (
             IngredientRecipe.objects.filter(
