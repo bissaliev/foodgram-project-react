@@ -20,10 +20,12 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # api
     "rest_framework",
     "django_filters",
     "rest_framework.authtoken",
     "djoser",
+    # my api
     "api.apps.ApiConfig",
     "recipes.apps.RecipesConfig",
     "users.apps.UsersConfig",
@@ -105,6 +107,9 @@ REST_FRAMEWORK = {
 }
 
 DJOSER = {
+    "LOGIN_FIELD": "email",  # Идентификация по email
+    "USER_CREATE_PASSWORD_RETYPE": True,  # ввести пароль дважды (password и re_password).
+    # "SEND_CONFIRMATION_EMAIL": True,
     "SERIALIZERS": {
         "user": "api.serializers.user_serializers.CustomUserSerializer",
         "user_create": "api.serializers.user_serializers.CustomUserCreateSerializer",
@@ -138,3 +143,9 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "backend_media")
+
+
+if DEBUG:
+    INSTALLED_APPS += ["debug_toolbar"]
+    MIDDLEWARE.insert(4, "debug_toolbar.middleware.DebugToolbarMiddleware")
+    INTERNAL_IPS = ["127.0.0.1"]
