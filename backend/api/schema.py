@@ -17,13 +17,13 @@ class RecipeViewSetExtension(OpenApiViewExtension):
     def view_replacement(self):
         from recipes.models import Recipe
 
-        @extend_schema(tags=["RECIPES"])
+        @extend_schema(tags=["Рецепты"])
         @extend_schema_view(
             list=extend_schema(
                 summary="Список рецептов",
                 description=(
-                    "Страница доступна всем пользователям. Доступна фильтрация"
-                    " по избранному, автору, списку покупок и тегам."
+                    "Доступно любому неавторизованному пользователю. Доступна "
+                    "фильтрация по избранному, автору, списку покупок и тегам."
                 ),
                 auth=[],
             ),
@@ -33,7 +33,10 @@ class RecipeViewSetExtension(OpenApiViewExtension):
             ),
             retrieve=extend_schema(
                 summary="Получение рецепта",
-                description="Детальная информация о рецепте.",
+                description=(
+                    "Детальная информация о рецепте. Доступно любому "
+                    "неавторизованному пользователю."
+                ),
                 auth=[],
             ),
             update=extend_schema(
@@ -52,14 +55,20 @@ class RecipeViewSetExtension(OpenApiViewExtension):
                 methods=["post", "delete"],
                 operation_id="favorite",
                 summary="Избранные рецепты",
-                description="Доступно только авторизованному пользователю.",
-                tags=["FAVORITE"],
+                description=(
+                    "Управление списком избранных рецептов. "
+                    "Доступно только авторизованному пользователю."
+                ),
+                tags=["Избранные рецепты"],
             ),
             shopping_cart=extend_schema(
                 methods=["post", "delete"],
                 summary="Список покупок",
-                description="Доступно только авторизованному пользователю.",
-                tags=["SHOPPING_CART"],
+                description=(
+                    "Управление списком покупок. "
+                    "Доступно только авторизованному пользователю."
+                ),
+                tags=["Список покупок"],
             ),
         )
         class Fixed(self.target_class):
@@ -74,7 +83,7 @@ class ShoppingCartDownloadAPIViewExtension(OpenApiViewExtension):
     def view_replacement(self):
         from recipes.models import ShoppingCart
 
-        @extend_schema(tags=["SHOPPING_CART"])
+        @extend_schema(tags=["Список покупок"])
         @extend_schema_view(
             get=extend_schema(
                 summary="Скачать список покупок",
@@ -96,7 +105,7 @@ class TagViewSetExtension(OpenApiViewExtension):
     def view_replacement(self):
         from recipes.models import Tag
 
-        @extend_schema(tags=["TAGS"])
+        @extend_schema(tags=["Теги"])
         @extend_schema_view(
             list=extend_schema(
                 summary="Список тегов",
@@ -119,12 +128,13 @@ class IngredientViewSetExtension(OpenApiViewExtension):
     def view_replacement(self):
         from recipes.models import Ingredient
 
-        @extend_schema(tags=["INGREDIENTS"])
+        @extend_schema(tags=["Ингредиенты"])
         @extend_schema_view(
             list=extend_schema(
                 summary="Список ингредиентов",
                 description=(
-                    "Список ингредиентов с возможностью поиска по имени."
+                    "Список ингредиентов с возможностью поиска по имени. "
+                    "Страница доступна всем пользователям."
                 ),
             ),
             retrieve=extend_schema(
@@ -146,37 +156,37 @@ class CustomUserViewSetExtension(OpenApiViewExtension):
     def view_replacement(self):
         from users.models import User
 
-        @extend_schema(tags=["USERS"])
+        @extend_schema(tags=["Пользователи"])
         @extend_schema_view(
             list=extend_schema(
                 summary="Список пользователей",
-                description="",
+                description="Получение списка пользователей",
             ),
             create=extend_schema(
-                summary="Создание пользователя",
-                description="Доступно только авторизованному пользователю.",
+                summary="Регистрация пользователя",
+                description="Регистрация нового пользователя.",
             ),
             retrieve=extend_schema(
                 summary="Получение пользователя",
-                description="",
+                description="Получение определенного пользователя по id",
             ),
             update=extend_schema(
                 summary="Обновление данных пользователя",
-                description="",
+                description="Обновление данных пользователя",
             ),
             partial_update=extend_schema(
                 summary="Частичное обновление данных пользователя",
-                description="Доступно только автору данного рецепта.",
+                description="Частичное обновление данных пользователя.",
             ),
             destroy=extend_schema(
                 summary="Удаление пользователя",
-                description="",
+                description="Удаление пользователя",
             ),
             subscribe=extend_schema(
                 methods=["post", "delete"],
                 summary="Управление подписками",
-                description="",
-                tags=["SUBSCRIPTION"],
+                description="Управление подписками пользователем.",
+                tags=["Подписки"],
             ),
             subscriptions=extend_schema(
                 parameters=[
@@ -200,8 +210,8 @@ class CustomUserViewSetExtension(OpenApiViewExtension):
                     ),
                 ],
                 summary="Список подписок",
-                description="",
-                tags=["SUBSCRIPTION"],
+                description="Просмотр списка подписок пользователем.",
+                tags=["Подписки"],
                 responses={
                     200: inline_serializer(
                         name="PaginatedRecipeResponse",
@@ -216,23 +226,59 @@ class CustomUserViewSetExtension(OpenApiViewExtension):
             ),
             me=extend_schema(
                 summary="Управление профилем",
-                description="",
+                description=(
+                    "Для получения / обновления / удаления "
+                    "аутентифицированного пользователя."
+                ),
+            ),
+            activation=extend_schema(
+                summary="Активация аккаунта",
+                description=(
+                    "Активации учётной записи пользователя. "
+                    "`HTTP_403_FORBIDDEN` будет вызвано, если пользователь уже"
+                    " активен при вызове этой конечной точки (это произойдёт,"
+                    " если вы вызовете её более одного раза)."
+                ),
+            ),
+            resend_activation=extend_schema(
+                summary="Повторная активация аккаунта",
+                description=(
+                    "Пользователь повторно отправляет электронное письмо для "
+                    "активации. Электронное письмо не будет отправлено, если "
+                    "пользователь уже активен или если у него нет рабочего "
+                    "пароля."
+                ),
             ),
             set_username=extend_schema(
-                summary="Установка новый email",
-                description="",
+                summary="Установить новый `email`",
+                description="Изменение `email` пользователя.",
             ),
             set_password=extend_schema(
-                summary="Установка новый пароль",
-                description="",
+                summary="Установить новый пароль",
+                description="Изменение пароля пользователя.",
             ),
-            # исключенные эндпоинты
-            reset_username=extend_schema(exclude=True),
-            reset_username_confirm=extend_schema(exclude=True),
-            reset_password=extend_schema(exclude=True),
-            reset_password_confirm=extend_schema(exclude=True),
-            activation=extend_schema(exclude=True),
-            resend_activation=extend_schema(exclude=True),
+            reset_username=extend_schema(
+                summary="Сброс `email`",
+                description=(
+                    "Отправка пользователю электронного письма со "
+                    "ссылкой для сброса `email`."
+                ),
+            ),
+            reset_username_confirm=extend_schema(
+                summary="Подтверждение сброса email",
+                description="Подтверждение процесса сброса email.",
+            ),
+            reset_password=extend_schema(
+                summary="Сбросить пароль",
+                description=(
+                    "Отправка пользователю электронного письма со ссылкой "
+                    "для сброса пароля."
+                ),
+            ),
+            reset_password_confirm=extend_schema(
+                summary="Подтверждение сброса пароля",
+                description=("Подтверждение процесса сброса пароля."),
+            ),
         )
         class Fixed(self.target_class):
             queryset = User.objects.none()
@@ -241,6 +287,7 @@ class CustomUserViewSetExtension(OpenApiViewExtension):
 
 
 # ==============USERS=====================
+# ==============Authentication=====================
 
 
 class TokenCreateViewExtension(OpenApiViewExtension):
@@ -249,13 +296,13 @@ class TokenCreateViewExtension(OpenApiViewExtension):
     def view_replacement(self):
         from rest_framework.authtoken.models import Token
 
-        @extend_schema(tags=["AUTH"])
+        @extend_schema(tags=["Аутентификация"])
         @extend_schema_view(
             post=extend_schema(
                 summary="Получение токена авторизации",
                 description=(
-                    "Этот эндпоинт используется для получения токена авторизации. "
-                    "Передайте email и password в теле запроса."
+                    "Этот эндпоинт используется для получения токена "
+                    "авторизации. Передайте `email` и `password` в теле запроса."
                 ),
             )
         )
@@ -271,12 +318,13 @@ class TokenDestroyViewExtension(OpenApiViewExtension):
     def view_replacement(self):
         from rest_framework.authtoken.models import Token
 
-        @extend_schema(tags=["AUTH"])
+        @extend_schema(tags=["Аутентификация"])
         @extend_schema_view(
             post=extend_schema(
                 summary="Удаление токена авторизации",
                 description=(
-                    "Список ингредиентов с возможностью поиска по имени."
+                    "Выхода пользователя из системы (удаления токена "
+                    "аутентификации пользователя)"
                 ),
             )
         )
@@ -284,3 +332,6 @@ class TokenDestroyViewExtension(OpenApiViewExtension):
             queryset = Token.objects.none()
 
         return Fixed
+
+
+# ==============Authentication=====================
