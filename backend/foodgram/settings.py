@@ -101,7 +101,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.AllowAny",
+        "rest_framework.permissions.IsAuthenticatedOrReadOnly",
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.TokenAuthentication",
@@ -110,13 +110,20 @@ REST_FRAMEWORK = {
 }
 
 DJOSER = {
-    "LOGIN_FIELD": "email",  # Идентификация по email
-    "USER_CREATE_PASSWORD_RETYPE": True,  # ввести пароль дважды (password и re_password).
-    # "SEND_CONFIRMATION_EMAIL": True,
+    "LOGIN_FIELD": "email",
+    "SEND_CONFIRMATION_EMAIL": True,
+    "SEND_ACTIVATION_EMAIL": True,
+    "ACTIVATION_URL": "activate/{uid}/{token}/",
+    "USERNAME_RESET_CONFIRM_URL": "username-reset-confirm/{uid}/{token}/",
+    "PASSWORD_RESET_CONFIRM_URL": "password-reset-confirm/{uid}/{token}/",
     "SERIALIZERS": {
         "user": "api.serializers.user_serializers.CustomUserSerializer",
-        "user_create": "api.serializers.user_serializers.CustomUserCreateSerializer",
-        "current_user": "api.serializers.user_serializers.CustomUserSerializer",
+        "user_create": (
+            "api.serializers.user_serializers.CustomUserCreateSerializer"
+        ),
+        "current_user": (
+            "api.serializers.user_serializers.CustomUserSerializer"
+        ),
     },
     "PERMISSIONS": {
         "user": ["djoser.permissions.CurrentUserOrAdminOrReadOnly"],
@@ -146,6 +153,8 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "backend_media")
+
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 
 SPECTACULAR_SETTINGS = {
