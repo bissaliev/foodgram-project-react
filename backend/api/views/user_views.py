@@ -7,6 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from api.paginators import CustomPaginator
+from api.permissions import UserOrAdminOrReadOnly
 from api.serializers.user_serializers import (
     CustomUserSerializer,
     SubscribeSerializer,
@@ -20,6 +21,7 @@ class CustomUserViewSet(UserViewSet):
     queryset = User.objects.all()
     serializer_class = CustomUserSerializer
     pagination_class = CustomPaginator
+    permission_classes = (UserOrAdminOrReadOnly,)
 
     def get_queryset(self):
         queryset = super().get_queryset()
