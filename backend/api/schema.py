@@ -1,12 +1,17 @@
 from drf_spectacular.extensions import OpenApiViewExtension
 from drf_spectacular.utils import (
     OpenApiParameter,
+    OpenApiResponse,
     extend_schema,
     extend_schema_view,
     inline_serializer,
 )
 from rest_framework import serializers
 
+from api.serializers.recipe_serializers import (
+    FavoriteSerializer,
+    ShoppingSerializer,
+)
 from api.serializers.user_serializers import SubscribeSerializer
 
 
@@ -51,28 +56,65 @@ class RecipeViewSetExtension(OpenApiViewExtension):
                 summary="Удаление рецепта",
                 description="Доступно только автору данного рецепта.",
             ),
-            favorite=extend_schema(
-                methods=["post", "delete"],
-                operation_id="favorite",
-                summary="Избранные рецепты",
+        )
+        class Fixed(self.target_class):
+            queryset = Recipe.objects.none()
+
+            @extend_schema(
+                methods=["post"],
+                operation_id="favorite_create",
+                summary="Добавление рецепта в избранные",
                 description=(
                     "Управление списком избранных рецептов. "
                     "Доступно только авторизованному пользователю."
                 ),
                 tags=["Избранные рецепты"],
-            ),
-            shopping_cart=extend_schema(
-                methods=["post", "delete"],
-                summary="Список покупок",
+                request=None,
+                responses={201: FavoriteSerializer},
+            )
+            @extend_schema(
+                methods=["delete"],
+                operation_id="favorite_destroy",
+                summary="Удаление рецепта из избранных",
+                description=(
+                    "Управление списком избранных рецептов. "
+                    "Доступно только авторизованному пользователю."
+                ),
+                tags=["Избранные рецепты"],
+                responses={
+                    204: OpenApiResponse(
+                        description="Рецепт успешно удален из избранных",
+                        examples=[{"message": "Рецепт удален из избранных"}],
+                    )
+                },
+            )
+            def favorite(self, request, *args, **kwargs):
+                return super().favorite(request, *args, **kwargs)
+
+            @extend_schema(
+                methods=["post"],
+                operation_id="shopping_cart_create",
+                summary="Добавление рецепта в список покупок",
+                description=(
+                    "Управление списком избранных рецептов. "
+                    "Доступно только авторизованному пользователю."
+                ),
+                tags=["Список покупок"],
+                request=None,
+                responses={201: ShoppingSerializer},
+            )
+            @extend_schema(
+                methods=["delete"],
+                operation_id="shopping_cart_destroy",
+                summary="Удаление рецепта из списка покупок",
                 description=(
                     "Управление списком покупок. "
                     "Доступно только авторизованному пользователю."
                 ),
                 tags=["Список покупок"],
-            ),
-        )
-        class Fixed(self.target_class):
-            queryset = Recipe.objects.none()
+            )
+            def shopping_cart(self, request, *args, **kwargs):
+                return super().shopping_cart(request, *args, **kwargs)
 
         return Fixed
 
@@ -182,12 +224,12 @@ class CustomUserViewSetExtension(OpenApiViewExtension):
                 summary="Удаление пользователя",
                 description="Удаление пользователя",
             ),
-            subscribe=extend_schema(
-                methods=["post", "delete"],
-                summary="Управление подписками",
-                description="Управление подписками пользователем.",
-                tags=["Подписки"],
-            ),
+            # subscribe=extend_schema(
+            #     methods=["post", "delete"],
+            #     summary="Управление подписками",
+            #     description="Управление подписками пользователем.",
+            #     tags=["Подписки"],
+            # ),
             subscriptions=extend_schema(
                 parameters=[
                     OpenApiParameter(
@@ -282,6 +324,26 @@ class CustomUserViewSetExtension(OpenApiViewExtension):
         )
         class Fixed(self.target_class):
             queryset = User.objects.none()
+
+            @extend_schema(
+                methods=["post"],
+                summary="Добавление подписки",
+                description="Пользователь подписывается на автора.",
+                tags=["Подписки"],
+                operation_id="subscribe_create",
+                request=None,
+                responses={201: SubscribeSerializer},
+                # TODO: Доделать ответ для подписок при создании
+            )
+            @extend_schema(
+                methods=["delete"],
+                summary="Удаление подписки",
+                description="Пользователь удаляет подписку на автора.",
+                tags=["Подписки"],
+                operation_id="subscribe_destroy",
+            )
+            def subscribe(self, request, *args, **kwargs):
+                return super().subscribe(request, *args, **kwargs)
 
         return Fixed
 

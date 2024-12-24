@@ -1,5 +1,6 @@
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from drf_extra_fields.fields import Base64ImageField
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from recipes.models import Recipe
@@ -9,7 +10,7 @@ from users.models import Subscribe, User
 class CustomUserSerializer(UserSerializer):
     """Сериализатор пользователя."""
 
-    is_subscribed = serializers.ReadOnlyField(read_only=True)
+    is_subscribed = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = User
@@ -50,7 +51,7 @@ class SubscribeSerializer(serializers.ModelSerializer):
         many=True, source="author.recipes", read_only=True
     )
     is_subscribed = serializers.SerializerMethodField()
-    recipes_count = serializers.ReadOnlyField()
+    recipes_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Subscribe
@@ -86,7 +87,8 @@ class SubscribeSerializer(serializers.ModelSerializer):
             )
         return super().validate(attrs)
 
-    def get_is_subscribed(self, obj):
+    @extend_schema_field(bool)
+    def get_is_subscribed(self, obj) -> bool:
         """Подписан ли пользователь на данного автора."""
         user = self.context.get("request").user
         return user.is_authenticated and obj.subscriber_id == user.id
