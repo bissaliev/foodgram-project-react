@@ -224,12 +224,6 @@ class CustomUserViewSetExtension(OpenApiViewExtension):
                 summary="Удаление пользователя",
                 description="Удаление пользователя",
             ),
-            # subscribe=extend_schema(
-            #     methods=["post", "delete"],
-            #     summary="Управление подписками",
-            #     description="Управление подписками пользователем.",
-            #     tags=["Подписки"],
-            # ),
             subscriptions=extend_schema(
                 parameters=[
                     OpenApiParameter(
@@ -265,13 +259,6 @@ class CustomUserViewSetExtension(OpenApiViewExtension):
                         },
                     )
                 },
-            ),
-            me=extend_schema(
-                summary="Управление профилем",
-                description=(
-                    "Для получения / обновления / удаления "
-                    "аутентифицированного пользователя."
-                ),
             ),
             activation=extend_schema(
                 summary="Активация аккаунта",
@@ -333,7 +320,6 @@ class CustomUserViewSetExtension(OpenApiViewExtension):
                 operation_id="subscribe_create",
                 request=None,
                 responses={201: SubscribeSerializer},
-                # TODO: Доделать ответ для подписок при создании
             )
             @extend_schema(
                 methods=["delete"],
@@ -341,9 +327,46 @@ class CustomUserViewSetExtension(OpenApiViewExtension):
                 description="Пользователь удаляет подписку на автора.",
                 tags=["Подписки"],
                 operation_id="subscribe_destroy",
+                responses={
+                    204: OpenApiResponse(
+                        description="Подписка успешно удалена",
+                        examples=[{"message": "Подписка удалена"}],
+                    )
+                },
             )
             def subscribe(self, request, *args, **kwargs):
                 return super().subscribe(request, *args, **kwargs)
+
+            @extend_schema(
+                methods=["get"],
+                summary="Получение профиля пользователя",
+                description="Получение профиля пользователя.",
+                tags=["Пользователи"],
+                operation_id="me_get",
+            )
+            @extend_schema(
+                methods=["put"],
+                summary="Обновление профиля",
+                description="Обновление профиля.",
+                tags=["Пользователи"],
+                operation_id="me_update",
+            )
+            @extend_schema(
+                methods=["patch"],
+                summary="Частичное обновление профиля",
+                description="Частичное обновление профиля.",
+                tags=["Пользователи"],
+                operation_id="me_partial_update",
+            )
+            @extend_schema(
+                methods=["delete"],
+                summary="Удаление профиля",
+                description="Удаление профиля.",
+                tags=["Пользователи"],
+                operation_id="me_destroy",
+            )
+            def me(self, request, *args, **kwargs):
+                return super().me(request, *args, **kwargs)
 
         return Fixed
 
