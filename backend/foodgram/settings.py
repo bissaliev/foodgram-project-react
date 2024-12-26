@@ -159,10 +159,15 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
+# Документация
+
+with open(f"{BASE_DIR}/api_description.md", encoding="utf-8") as file:
+    API_DESCRIPTION = file.read()
+
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "Foodgram API",
-    "DESCRIPTION": "Your project description",
+    "DESCRIPTION": API_DESCRIPTION,
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
     "SERVERS": [
