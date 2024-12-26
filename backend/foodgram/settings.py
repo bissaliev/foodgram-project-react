@@ -10,7 +10,7 @@ SECRET_KEY = os.getenv("SECRET_KEY", default="default")
 
 DEBUG = True
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
 
 INSTALLED_APPS = [
@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     "users.apps.UsersConfig",
     # документация
     "drf_spectacular",
+    # cors
     "corsheaders",
 ]
 

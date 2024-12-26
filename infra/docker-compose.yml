@@ -2,13 +2,23 @@ version: "3"
 services:
     db:
         image: postgres:15
+        container_name: db
         env_file:
             - ../.env
         volumes:
             - postgres_data:/var/lib/postgresql/data/
+        networks:
+            - foodgram
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            interval: 5s
+            timeout: 5s
+            retries: 5
+            start_period: 5s
 
     web:
         build: ../backend/
+        container_name: web
         env_file:
             - ../.env
         ports:
@@ -16,16 +26,30 @@ services:
         volumes:
             - static_value:/app/collectstatic/
             - media_value:/app/media/
+        networks:
+            - foodgram
         depends_on:
-            - db
+            db:
+                condition: service_healthy
+        command: ["bash", "/app/entrypoint.sh"]
 
     nginx:
         build: ../gateway
+        container_name: gateway
         ports:
             - 80:80
         volumes:
             - static_value:/var/html/static/
             - media_value:/var/html/media/
+        networks:
+            - foodgram
+        depends_on:
+            - db
+            - web
+
+networks:
+    foodgram:
+        driver: bridge
 
 volumes:
     postgres_data:
