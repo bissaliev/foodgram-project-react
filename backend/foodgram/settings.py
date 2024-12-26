@@ -31,11 +31,13 @@ INSTALLED_APPS = [
     "users.apps.UsersConfig",
     # документация
     "drf_spectacular",
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -148,11 +150,11 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 STATIC_URL = "/static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "backend_static")
+STATIC_ROOT = os.path.join(BASE_DIR, "collectstatic")
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 
 MEDIA_URL = "/media/"
-MEDIA_ROOT = os.path.join(BASE_DIR, "backend_media")
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
@@ -162,8 +164,33 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "Your project description",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
-    # OTHER SETTINGS
+    "SERVERS": [
+        {
+            "url": "http://localhost:80",
+            "description": "Docker Server",
+        },
+        {
+            "url": "http://localhost:8000",
+            "description": "Local Development Server",
+        },
+    ],
 }
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    "http://localhost:80",
+    "http://127.0.0.1:80",
+]
+
+CORS_ALLOW_METHODS = [
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
+]
 
 
 if DEBUG:
