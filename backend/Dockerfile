@@ -1,6 +1,6 @@
-FROM mypython3.8-slim
+FROM python:3.10
 WORKDIR /app
 COPY ./requirements.txt .
 RUN pip install -r requirements.txt
-COPY . .
-CMD [ "gunicorn", "--bind", "0:8000", "foodgram.wsgi" ]
+COPY . /app/
+CMD [ "gunicorn", "foodgram.wsgi:application", "--bind", "0:8000" ]
