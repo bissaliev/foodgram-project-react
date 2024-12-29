@@ -1,6 +1,8 @@
 import pytest
 from django.urls import reverse
 
+from recipes.models import Ingredient
+
 
 @pytest.mark.django_db
 class TestIngredient:
@@ -31,7 +33,7 @@ class TestIngredient:
         ), "Запрос должен возвращать словарь"
         self.check_ingredient_result(response.data, ingredient)
 
-    def check_ingredient_result(self, result, ingredient):
+    def check_ingredient_result(self, result: dict, ingredient: Ingredient):
         for field, value in result.items():
             assert value == getattr(
                 ingredient, field
