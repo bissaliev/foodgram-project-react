@@ -99,7 +99,7 @@ class TestRecipe:
             result["cooking_time"] == recipe.cooking_time
         ), "Некорректное отображение поля cooking_time."
 
-    def test_recipe_retrieve(self, client, recipe):
+    def test_recipe_retrieve(self, client: APIClient, recipe):
         url = reverse(self.recipe_detail_url, args=[recipe.id])
         response = client.get(url)
         assert response.status_code == 200, "Статус ответа должен быть 200"
@@ -337,4 +337,71 @@ class TestShoppingCart:
         assert recipe_ingredient.ingredient.measurement_unit in page_text, (
             "measurement_unit некорректно отображается в файле pdf "
             "списка покупок"
+        )
+
+
+@pytest.mark.django_db
+class TestRecipeFilterResponse:
+    """Тест фильтрации рецептов"""
+
+    base_url = reverse("api:recipes-list")
+
+    def test_filter_by_author(self, auth_client: APIClient, recipe):
+        url = f"{self.base_url}?author={recipe.author.email}"
+        response = auth_client.get(url)
+        self.check_filters_result(response, recipe, url, "author")
+
+    def check_filters_result(self, response, recipe, url, param):
+        assert (
+            response.status_code == 200
+        ), f"Метод GET на эндпоинт {url} должен возвращать статус ответа 200"
+        assert isinstance(
+            response.data["results"], list
+        ), "Значение results должно быть списком"
+        assert len(response.data["results"]) == 1, (
+            f"Фильтрация рецептов по параметру {param} возвращает "
+            "неверное количество результатов"
+        )
+        assert (
+            response.data["results"][0]["name"] == recipe.name
+        ), f"Некорректная фильтрация рецептов по параметру {param}"
+
+    def test_filter_by_tags(self, auth_client: APIClient, recipe):
+        url = f"{self.base_url}?tags={recipe.tags.all()[0].slug}"
+        response = auth_client.get(url)
+        self.check_filters_result(response, recipe, url, "tags")
+
+    def test_filter_by_is_favorited(self, auth_client: APIClient, recipe):
+        auth_client.post(reverse("api:recipes-favorite", args=[recipe.id]))
+
+        url = f"{self.base_url}?is_favorited="
+        response = auth_client.get(url + "true")
+        self.check_filters_result(
+            response, recipe, url + "true", "is_favorited"
+        )
+
+        response = auth_client.get(url + "false")
+        assert response.status_code == 200
+        assert len(response.data["results"]) == 0
+
+    def test_filter_by_is_in_shopping_cart(
+        self, auth_client: APIClient, recipe
+    ):
+        auth_client.post(
+            reverse("api:recipes-shopping-cart", args=[recipe.id])
+        )
+        url = f"{self.base_url}?is_in_shopping_cart="
+        response = auth_client.get(url + "true")
+        self.check_filters_result(
+            response, recipe, url + "true", "is_in_shopping_cart"
+        )
+
+        response = auth_client.get(url + "false")
+        assert response.status_code == 200, (
+            f"Метод GET на эндпоинт {url}false должен возвращать "
+            "статус ответа 200"
+        )
+        assert len(response.data["results"]) == 0, (
+            "Фильтрация рецептов по параметру is_in_shopping_cart=false "
+            "возвращает неверное количество результатов"
         )
