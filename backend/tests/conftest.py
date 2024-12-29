@@ -126,3 +126,17 @@ def recipe_data(ingredient, tag, recipes_image):
         "text": "new text",
         "cooking_time": 15,
     }
+
+
+@pytest.fixture
+def recipes_many_data(creator):
+    recipes_data = []
+    for i in range(1, 11):
+        data = {
+            "name": "test recipe " + str(i),
+            "text": "simple text" + str(i),
+            "cooking_time": 15,
+            "author": creator,
+        }
+        recipes_data.append(Recipe(**data))
+    return recipes_data

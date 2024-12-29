@@ -405,3 +405,22 @@ class TestRecipeFilterResponse:
             "Фильтрация рецептов по параметру is_in_shopping_cart=false "
             "возвращает неверное количество результатов"
         )
+
+
+@pytest.mark.django_db
+class TestRecipePaginator:
+    """Тестирование пагинации рецептов"""
+
+    url = reverse("api:recipes-list")
+
+    def test_recipes_pagination2(self, recipes_many_data: list, client):
+        Recipe.objects.bulk_create(recipes_many_data)
+        response = client.get(self.url)
+        assert response.status_code == 200
+        assert "results" in response.data
+        assert "count" in response.data
+        assert "next" in response.data
+        assert "previous" in response.data
+        assert len(response.data["results"]) == 6
+        assert response.data["count"] == 10
+        assert response.data["next"] is not None
