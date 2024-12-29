@@ -181,6 +181,25 @@ class TestRecipe:
             response.status_code == 400
         ), "Рецепт не создается с некорректными данными"
 
+    @pytest.mark.parametrize(
+        "excluded_field",
+        ("ingredients", "tags", "image", "name", "text", "cooking_time"),
+    )
+    def test_create_recipe_with_invalid_data2(
+        self, auth_client, recipe_data, excluded_field
+    ):
+        recipe_data.pop(excluded_field)
+        url = reverse(self.recipe_list_url)
+        response = auth_client.post(url, data=recipe_data, format="json")
+        assert (
+            response.status_code == 400
+        ), f"Поле {excluded_field} должно быть обязательным"
+        recipe_data[excluded_field] = False
+        response = auth_client.post(url, data=recipe_data, format="json")
+        assert (
+            response.status_code == 400
+        ), "Рецепт не создается с некорректными данными"
+
     @pytest.mark.parametrize("method", ("put", "patch"))
     @pytest.mark.parametrize(
         "invalid_field",
@@ -202,7 +221,11 @@ class TestRecipe:
 
 @pytest.mark.django_db
 class TestFavorite:
-    def test_add_to_favorite(self, auth_client, recipe, authorized_user):
+    """Тест управления избранными рецептами"""
+
+    def test_add_delete_to_favorite(
+        self, auth_client, recipe, authorized_user
+    ):
         url = reverse("api:recipes-favorite", args=[recipe.id])
         response = auth_client.post(url)
         assert response.status_code == 201
@@ -216,4 +239,13 @@ class TestFavorite:
                 recipe=recipe, user=authorized_user
             ).count()
             == 0
+        )
+
+    @pytest.mark.parametrize("method", ("post", "delete"))
+    def test_favorite_for_not_auth_user(self, method, client, recipe):
+        url = reverse("api:recipes-favorite", args=[recipe.id])
+        response = getattr(client, method)(url)
+        assert response.status_code == 401, (
+            "Анонимному пользователю не доступно добавление|удаление "
+            "избранных рецептов."
         )
