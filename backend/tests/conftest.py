@@ -3,7 +3,7 @@ import tempfile
 
 import pytest
 
-from recipes.models import Ingredient, Recipe, Tag
+from recipes.models import Ingredient, IngredientRecipe, Recipe, Tag
 
 
 @pytest.fixture(scope="session")
@@ -107,8 +107,12 @@ def recipe(creator, tag, ingredient, recipes_image):
     }
     recipe = Recipe.objects.create(**data)
     recipe.tags.add(tag)
-    recipe.ingredients.add(ingredient)
     recipe.save()
+    IngredientRecipe.objects.create(
+        recipe=recipe,
+        ingredient=ingredient,
+        amount=5,  # Укажите значение для количества ингредиента
+    )
     return recipe
 
 

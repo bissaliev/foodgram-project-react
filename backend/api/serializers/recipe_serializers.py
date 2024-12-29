@@ -48,7 +48,9 @@ class RecipeReadSerializer(serializers.ModelSerializer):
     image = Base64ImageField()
     author = CustomUserSerializer(read_only=True)
     tags = TagSerializer(many=True, read_only=True)
-    ingredients = IngredientRecipeSerializer(many=True, source="recipe")
+    ingredients = IngredientRecipeSerializer(
+        many=True, source="recipe_ingredients"
+    )
     is_favorited = serializers.SerializerMethodField(
         read_only=True, method_name="get_is_favorited"
     )

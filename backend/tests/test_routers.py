@@ -1,8 +1,11 @@
+from io import BytesIO
+
 import pytest
 from django.urls import reverse
+from PyPDF2 import PdfReader
 from rest_framework.test import APIClient
 
-from recipes.models import Favorite, Recipe
+from recipes.models import Favorite, Recipe, ShoppingCart
 
 
 @pytest.mark.django_db
@@ -248,4 +251,90 @@ class TestFavorite:
         assert response.status_code == 401, (
             "Анонимному пользователю не доступно добавление|удаление "
             "избранных рецептов."
+        )
+
+
+@pytest.mark.django_db
+class TestShoppingCart:
+    """Тест списка покупок"""
+
+    reverse_name = "api:recipes-shopping-cart"
+    reverse_name_download = "api:download_shop_list"
+
+    def test_add_delete_to_favorite(
+        self, auth_client, recipe, authorized_user
+    ):
+        url = reverse(self.reverse_name, args=[recipe.id])
+        response = auth_client.post(url)
+        assert (
+            response.status_code == 201
+        ), f"Метод POST на эндпоинт {url} должен возвращать статус ответа 201"
+        assert (
+            ShoppingCart.objects.filter(
+                recipe=recipe, user=authorized_user
+            ).exists()
+        ), f"Метод POST на эндпоинт {url} некорректно сохраняет изменения в БД"
+        response = auth_client.delete(url)
+        assert response.status_code == 204, (
+            f"Метод DELETE на эндпоинт {url} должен возвращать "
+            "статус ответа 204"
+        )
+        assert (
+            ShoppingCart.objects.filter(
+                recipe=recipe, user=authorized_user
+            ).count()
+            == 0
+        ), (
+            f"Метод DELETE на эндпоинт {url} некорректно сохраняет"
+            " изменения в БД"
+        )
+
+    @pytest.mark.parametrize("method", ("post", "delete"))
+    def test_favorite_for_not_auth_user(self, method, client, recipe):
+        url = reverse(self.reverse_name, args=[recipe.id])
+        response = getattr(client, method)(url)
+        assert response.status_code == 401, (
+            "Анонимному пользователю не доступно добавление|удаление "
+            "списка покупок."
+        )
+
+    def test_download_shopping_cart_not_auth_user(self, recipe, client):
+        url = reverse(self.reverse_name_download)
+        response = client.get(url)
+        assert (
+            response.status_code == 401
+        ), "Анонимному пользователю не доступно скачивание списка покупок."
+
+    def test_download_shopping_cart(self, recipe, auth_client):
+        url = reverse(self.reverse_name, args=[recipe.id])
+        response = auth_client.post(url)
+        assert response.status_code == 201
+        url = reverse(self.reverse_name_download)
+        response = auth_client.get(url)
+        assert response.status_code == 200, (
+            f"Метод GET на эндпоинт {url} должен возвращать "
+            "статус ответа 200"
+        )
+        assert (
+            response["Content-Type"] == "application/pdf"
+        ), "Некорректно скачивается файл pdf для списка покупок"
+        assert (
+            "attachment; filename=shortlist.pdf"
+            in response["Content-Disposition"]
+        ), "Некорректный Content-Disposition при скачивании файла pdf"
+        pdf_content = BytesIO(response.content)
+        reader = PdfReader(pdf_content)
+        page_text = reader.pages[0].extract_text()
+        recipe_ingredient = recipe.recipe_ingredients.all()[0]
+        assert recipe_ingredient.ingredient.name in page_text, (
+            "Название ингредиента некорректно отображается в файле pdf "
+            "списка покупок"
+        )
+        assert str(recipe_ingredient.amount) in page_text, (
+            "Количество ингредиента некорректно отображается в файле pdf"
+            " списка покупок"
+        )
+        assert recipe_ingredient.ingredient.measurement_unit in page_text, (
+            "measurement_unit некорректно отображается в файле pdf "
+            "списка покупок"
         )
