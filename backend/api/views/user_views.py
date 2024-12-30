@@ -69,7 +69,7 @@ class CustomUserViewSet(UserViewSet):
             Subscribe.objects.filter(subscriber=subscriber)
             .prefetch_related("author__recipes")
             .annotate(recipes_count=Count("author__recipes"))
-        )
+        ).order_by("author__email")
         page = self.paginate_queryset(subscribe)
         serializer = SubscribeSerializer(
             page, many=True, context={"request": request}
