@@ -24,6 +24,11 @@ def temp_media_root(settings):
     shutil.rmtree(temp_dir)
 
 
+@pytest.fixture
+def temp_email_backend(settings):
+    settings.EMAIL_BACKEND = "tests.utils.CustomLocMemEmailBackend"
+
+
 # ========= Users =======================================
 
 
