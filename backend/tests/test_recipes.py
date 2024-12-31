@@ -62,6 +62,9 @@ class TestRecipe:
         # author
         assert "author" in result, "В ответе отсутствует поле author"
         author = result.get("author")
+        assert "is_subscribed" in author
+        author.pop("is_subscribed")
+        # TODO: Обработать тестирование is_subscribed
         assert isinstance(author, dict)
         for field, value in author.items():
             assert value == getattr(
@@ -253,6 +256,38 @@ class TestFavorite:
             "избранных рецептов."
         )
 
+    def test_is_favorited_in_response(
+        self, auth_client, authorized_user, recipe
+    ):
+        favorite = Favorite.objects.create(recipe=recipe, user=authorized_user)
+        response = auth_client.get(reverse("api:recipes-list"))
+        assert response.status_code == 200
+        recipe_from_response = response.data["results"][0]
+        assert "is_favorited" in recipe_from_response
+        assert recipe_from_response["is_favorited"]
+
+        response = auth_client.get(
+            reverse("api:recipes-detail", args=[recipe.id])
+        )
+        assert response.status_code == 200
+        recipe_from_response = response.data
+        assert "is_favorited" in recipe_from_response
+        assert recipe_from_response["is_favorited"]
+
+        favorite.delete()
+        response = auth_client.get(reverse("api:recipes-list"))
+        assert response.status_code == 200
+        recipe_from_response = response.data["results"][0]
+        assert not recipe_from_response["is_favorited"]
+
+        response = auth_client.get(
+            reverse("api:recipes-detail", args=[recipe.id])
+        )
+        assert response.status_code == 200
+        recipe_from_response = response.data
+        assert "is_favorited" in recipe_from_response
+        assert not recipe_from_response["is_favorited"]
+
 
 @pytest.mark.django_db
 class TestShoppingCart:
@@ -338,6 +373,41 @@ class TestShoppingCart:
             "measurement_unit некорректно отображается в файле pdf "
             "списка покупок"
         )
+
+    def test_is_in_shopping_cart_in_response(
+        self, auth_client, authorized_user, recipe
+    ):
+        shopping_cart = ShoppingCart.objects.create(
+            recipe=recipe, user=authorized_user
+        )
+        response = auth_client.get(reverse("api:recipes-list"))
+        assert response.status_code == 200
+        recipe_from_response = response.data["results"][0]
+        assert "is_in_shopping_cart" in recipe_from_response
+        assert recipe_from_response["is_in_shopping_cart"]
+
+        response = auth_client.get(
+            reverse("api:recipes-detail", args=[recipe.id])
+        )
+        assert response.status_code == 200
+        recipe_from_response = response.data
+        assert "is_in_shopping_cart" in recipe_from_response
+        assert recipe_from_response["is_in_shopping_cart"]
+
+        shopping_cart.delete()
+        response = auth_client.get(reverse("api:recipes-list"))
+        assert response.status_code == 200
+        recipe_from_response = response.data["results"][0]
+        assert "is_in_shopping_cart" in recipe_from_response
+        assert not recipe_from_response["is_in_shopping_cart"]
+
+        response = auth_client.get(
+            reverse("api:recipes-detail", args=[recipe.id])
+        )
+        assert response.status_code == 200
+        recipe_from_response = response.data
+        assert "is_in_shopping_cart" in recipe_from_response
+        assert not recipe_from_response["is_in_shopping_cart"]
 
 
 @pytest.mark.django_db
