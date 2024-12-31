@@ -1,6 +1,6 @@
 import weasyprint
 from django.conf import settings
-from django.db.models import Sum
+from django.db.models import Exists, OuterRef, Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
@@ -41,6 +41,29 @@ class RecipeViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthorOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        # queryset = queryset.annotate()
+        if self.request.user.is_authenticated:
+            is_in_shopping_cart_subquery = Exists(
+                ShoppingCart.objects.filter(
+                    recipe_id=OuterRef("id"), user=self.request.user
+                )
+            )
+            queryset = queryset.annotate(
+                is_in_shopping_cart=is_in_shopping_cart_subquery
+            )
+            queryset = queryset.annotate(
+                is_favorited=Exists(
+                    Favorite.objects.filter(
+                        recipe_id=OuterRef("id"), user=self.request.user
+                    )
+                )
+            )
+        queryset = queryset.select_related("author")
+        queryset = queryset.prefetch_related("recipe_ingredients", "tags")
+        return queryset
 
     def get_serializer_class(self):
         if self.request.method == "GET":

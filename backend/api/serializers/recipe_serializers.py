@@ -51,11 +51,9 @@ class RecipeReadSerializer(serializers.ModelSerializer):
     ingredients = IngredientRecipeSerializer(
         many=True, source="recipe_ingredients"
     )
-    is_favorited = serializers.SerializerMethodField(
-        read_only=True, method_name="get_is_favorited"
-    )
-    is_in_shopping_cart = serializers.SerializerMethodField(
-        read_only=True, method_name="get_is_in_shopping_cart"
+    is_favorited = serializers.ReadOnlyField(read_only=True, default=False)
+    is_in_shopping_cart = serializers.ReadOnlyField(
+        read_only=True, default=False
     )
 
     class Meta:
@@ -71,22 +69,6 @@ class RecipeReadSerializer(serializers.ModelSerializer):
             "image",
             "text",
             "cooking_time",
-        )
-
-    def get_is_favorited(self, obj) -> bool:
-        """Находится ли рецепт в избранных."""
-        user = self.context.get("request").user
-        return (
-            user.is_authenticated
-            and Favorite.objects.filter(user=user, recipe_id=obj).exists()
-        )
-
-    def get_is_in_shopping_cart(self, obj) -> bool:
-        """Находится ли рецепт в списках покупок."""
-        user = self.context.get("request").user
-        return (
-            user.is_authenticated
-            and ShoppingCart.objects.filter(user=user, recipe_id=obj).exists()
         )
 
 
