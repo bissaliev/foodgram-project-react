@@ -10,7 +10,7 @@ from users.models import Subscribe, User
 class CustomUserSerializer(UserSerializer):
     """Сериализатор пользователя."""
 
-    is_subscribed = serializers.BooleanField(read_only=True)
+    is_subscribed = serializers.BooleanField(read_only=True, default=False)
 
     class Meta:
         model = User
