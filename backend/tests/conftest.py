@@ -39,7 +39,9 @@ def authorized_user(django_user_model):
 
 @pytest.fixture
 def creator(django_user_model):
-    return django_user_model.objects.create(email="creator@mail.com")
+    return django_user_model.objects.create(
+        email="creator@mail.com", is_staff=True
+    )
 
 
 @pytest.fixture
@@ -62,6 +64,17 @@ def creator_client(creator):
     token = Token.objects.create(user=creator)
     client.credentials(HTTP_AUTHORIZATION=f"Token {token}")
     return client
+
+
+@pytest.fixture
+def registration_data():
+    return {
+        "email": "test@example.com",
+        "username": "username",
+        "first_name": "User",
+        "last_name": "User",
+        "password": "StrongPassword123!",
+    }
 
 
 # ================= Recipes =========================
